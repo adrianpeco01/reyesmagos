@@ -1,0 +1,406 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mi carta a los Reyes Magos</title>
+<style>
+  :root {
+    --ink: #24312b; --muted: #68736b; --gold: #b68a3a; --red: #8e3437;
+    --paper: #fffdf7; --line: #e9dfcb; --green: #315747;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 28px 16px 60px; color: var(--ink);
+    background: #e9e6dd; font-family: Georgia, "Times New Roman", serif;
+  }
+  .toolbar {
+    max-width: 900px; margin: 0 auto 18px; display: flex; gap: 10px;
+    justify-content: flex-end; flex-wrap: wrap; font-family: Arial, sans-serif;
+  }
+  button, .file-label {
+    border: 0; border-radius: 8px; padding: 11px 16px; cursor: pointer;
+    font: 600 13px Arial, sans-serif;
+  }
+  .primary { background: var(--green); color: white; }
+  .secondary { background: white; color: var(--green); border: 1px solid #cbd4cc; }
+  .danger { background: #f6e9e7; color: #873b38; }
+  .sheet {
+    width: min(100%, 900px); min-height: 1120px; margin: auto; padding: 64px 72px;
+    background: var(--paper); box-shadow: 0 12px 45px #252b241f; position: relative;
+    border: 1px solid #e7dec9;
+  }
+  .sheet:before {
+    content: ""; position: absolute; inset: 14px; border: 1px solid #e8dcc2;
+    pointer-events: none;
+  }
+  .topline { display:flex; align-items:center; justify-content:center; gap:12px; color:var(--gold); }
+  .star { font-size: 22px; }
+  .eyebrow { text-transform:uppercase; letter-spacing: .25em; font: 700 10px Arial,sans-serif; color:var(--gold); }
+  h1 {
+    text-align:center; color:var(--red); font-size: clamp(34px, 6vw, 49px);
+    font-weight: normal; line-height:1.12; margin: 22px 0 10px;
+  }
+  .subtitle { text-align:center; color:var(--muted); font-style:italic; font-size:16px; margin:0 0 28px; }
+  .intro {
+    width: min(100%, 650px); margin: 0 auto 34px; text-align:center; line-height:1.7;
+    font-size:16px; white-space:pre-wrap; color:#46534a;
+  }
+  .divider { display:flex; align-items:center; gap:14px; margin: 28px 0; color:var(--gold); }
+  .divider:before,.divider:after { content:""; height:1px; background:var(--line); flex:1; }
+  .section-title { text-align:center; font-size:20px; color:var(--green); font-weight:normal; margin:0 0 22px; }
+  #products { display:grid; gap:15px; }
+  .product {
+    display:grid; grid-template-columns: 138px 1fr; gap:20px; padding:16px;
+    border:1px solid var(--line); border-radius:10px; break-inside:avoid;
+    background:#fffefa;
+  }
+  .photo-wrap {
+    width:138px; height:138px; background:#f3efe5; border-radius:7px; overflow:hidden;
+    display:flex; align-items:center; justify-content:center; color:#a69b86;
+  }
+  .photo-wrap img { width:100%; height:100%; object-fit:contain; }
+  .placeholder { text-align:center; font:12px Arial,sans-serif; padding:10px; }
+  .product h3 { margin:3px 0 8px; font-size:20px; font-weight:normal; color:var(--red); }
+  .product .price { color:var(--green); font:700 17px Arial,sans-serif; margin:0 0 10px; }
+  .product a { color:#80612b; font:13px Arial,sans-serif; overflow-wrap:anywhere; }
+  .product-note { color:var(--muted); font:13px/1.5 Arial,sans-serif; margin-top:9px; }
+  .edit-fields { display:none; }
+  .footer { text-align:center; color:var(--muted); font-style:italic; margin-top:38px; line-height:1.7; }
+  .footer strong { color:var(--red); font-weight:normal; }
+  .editor {
+    max-width:900px; margin:20px auto 0; background:#fff; padding:22px;
+    border-radius:12px; box-shadow:0 5px 25px #252b2410; font-family:Arial,sans-serif;
+  }
+  .editor h2 { margin:0 0 15px; color:var(--green); font:600 17px Arial,sans-serif; }
+  .field-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  label { display:block; font-size:12px; color:#59645d; font-weight:600; margin-bottom:6px; }
+  input, textarea {
+    width:100%; border:1px solid #d9dfd9; border-radius:7px; padding:10px;
+    font:14px Arial,sans-serif; color:#26332b; background:#fff;
+  }
+  textarea { min-height:90px; resize:vertical; }
+  .field { margin-bottom:12px; }
+  .product-editor { border:1px solid #e2e7e2; border-radius:9px; padding:14px; margin:12px 0; }
+  .product-editor-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+  .product-editor-head strong { color:var(--green); font-size:13px; }
+  .product-editor .field-grid { grid-template-columns:1.4fr .8fr; }
+  .product-editor input[type=file] { padding:7px; font-size:12px; }
+  .photo-paste {
+    border: 1px dashed #b9c8bc; border-radius: 8px; padding: 12px;
+    text-align: center; background: #f7faf6; color: #52665a;
+    font: 12px/1.5 Arial, sans-serif; cursor: text; outline: none;
+    min-height: 62px; display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+  }
+  .photo-paste:focus { border-color: var(--green); box-shadow: 0 0 0 2px #31574720; }
+  .photo-paste.has-image { border-style: solid; color: var(--green); }
+  .photo-paste strong { font-size: 13px; }
+  .hint { color:#7a837d; font-size:12px; line-height:1.5; margin:7px 0 0; }
+
+  @media(max-width:650px) {
+    body { padding:12px 8px 30px; }
+    .sheet { padding:45px 27px; min-height:0; }
+    .product { grid-template-columns:95px 1fr; gap:13px; padding:11px; }
+    .photo-wrap { width:95px; height:105px; }
+    .product h3 { font-size:17px; }
+    .field-grid, .product-editor .field-grid { grid-template-columns:1fr; }
+  }
+
+  @media print {
+    @page { size:A4; margin:0; }
+
+    body {
+      padding:0;
+      background:white;
+      -webkit-print-color-adjust:exact;
+      print-color-adjust:exact;
+    }
+
+    .toolbar,.editor { display:none !important; }
+
+    .sheet {
+      width:210mm;
+      min-height:297mm;
+      margin:0;
+      padding:17mm 18mm;
+      box-shadow:none;
+      border:0;
+
+      /* Repite el fondo y el margen interior en las páginas siguientes.
+         La primera página conserva su diseño original. */
+      -webkit-box-decoration-break: clone;
+      box-decoration-break: clone;
+    }
+
+    .sheet:before { inset:5mm; }
+
+    /* Evita que el navegador parta una ficha de producto entre dos páginas. */
+    #products { display:block; }
+
+    .product {
+      display:grid;
+      break-inside:avoid-page;
+      page-break-inside:avoid;
+      -webkit-column-break-inside:avoid;
+      margin:0 0 5mm;
+    }
+
+    .product h3, .product .price, .product a, .product-note {
+      orphans:3;
+      widows:3;
+    }
+
+    a { color:#80612b; text-decoration:underline; }
+  }
+</style>
+</head>
+
+<body>
+  <div class="toolbar">
+    <button class="secondary" onclick="window.print()">Guardar como PDF / Imprimir</button>
+    <button class="primary" onclick="addProduct()">+ Añadir producto</button>
+  </div>
+
+  <main class="sheet">
+    <div class="topline"><span class="star">✧</span><span class="eyebrow">Una carta llena de ilusión</span><span class="star">✧</span></div>
+    <h1 id="preview-title">Mi carta a los Reyes Magos</h1>
+    <p class="subtitle">Con mucho cariño y un poquito de magia</p>
+
+    <div class="intro" id="preview-intro">Queridos Reyes Magos:
+
+Este año he preparado una pequeña lista de cosas que me harían mucha ilusión. Os dejo por aquí mis ideas, con imágenes y enlaces para que podáis encontrarlas fácilmente.
+
+¡Muchas gracias y feliz noche de Reyes!</div>
+
+    <div class="divider">✦</div>
+    <h2 class="section-title">Mis deseos para este año</h2>
+
+    <section id="products">
+      <article class="product">
+        <div class="photo-wrap"><div class="placeholder">✧<br>Foto del regalo</div></div>
+        <div>
+          <h3>Nombre del producto</h3>
+          <p class="price">00,00 €</p>
+          <a href="#" target="_blank" rel="noopener">Ver producto</a>
+          <div class="product-note">Aquí aparecerán los detalles del regalo.</div>
+        </div>
+      </article>
+    </section>
+
+    <div class="footer">Con ilusión,<br><strong>¡y esperando que la magia llegue a casa!</strong></div>
+  </main>
+
+  <section class="editor">
+    <h2>Personaliza tu carta</h2>
+
+    <div class="field">
+      <label for="title">Título</label>
+      <input id="title" value="Mi carta a los Reyes Magos" oninput="updateHeader()">
+    </div>
+
+    <div class="field">
+      <label for="intro">Texto de introducción</label>
+      <textarea id="intro" oninput="updateHeader()">Queridos Reyes Magos:
+
+Este año he preparado una pequeña lista de cosas que me harían mucha ilusión. Os dejo por aquí mis ideas, con imágenes y enlaces para que podáis encontrarlas fácilmente.
+
+¡Muchas gracias y feliz noche de Reyes!</textarea>
+    </div>
+
+    <h2>Productos</h2>
+    <div id="product-editors"></div>
+
+    <button class="primary" onclick="addProduct()">+ Añadir otro producto</button>
+
+    <p class="hint">
+      Añade una foto desde tu dispositivo con el selector o copia una imagen
+      y pégala con Ctrl + V: primero haz clic en el recuadro «Pegar imagen»
+      del producto correspondiente. Después pega el enlace, escribe el precio
+      y, al terminar, pulsa «Guardar como PDF / Imprimir» y selecciona
+      «Guardar como PDF». La carta se adapta a varias páginas si hace falta.
+    </p>
+  </section>
+
+<script>
+let products = [];
+let nextId = 1;
+
+function updateHeader() {
+  document.getElementById('preview-title').textContent =
+    document.getElementById('title').value || 'Mi carta a los Reyes Magos';
+
+  document.getElementById('preview-intro').textContent =
+    document.getElementById('intro').value;
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, c => ({
+    '&':'&amp;',
+    '<':'&lt;',
+    '>':'&gt;',
+    '"':'&quot;',
+    "'":'&#39;'
+  }[c]));
+}
+
+function addProduct() {
+  const p = {id:nextId++, name:'', price:'', link:'', note:'', image:''};
+  products.push(p);
+  renderEditors();
+  renderProducts();
+  document.getElementById('edit-name-'+p.id).focus();
+}
+
+function removeProduct(id) {
+  products = products.filter(p => p.id !== id);
+  renderEditors();
+  renderProducts();
+}
+
+function setValue(id, key, value) {
+  const p = products.find(x => x.id === id);
+  if (p) {
+    p[key] = value;
+    renderProducts();
+  }
+}
+
+function renderEditors() {
+  const root = document.getElementById('product-editors');
+
+  root.innerHTML = products.map((p,i) => `
+    <div class="product-editor">
+      <div class="product-editor-head">
+        <strong>Producto ${i+1}</strong>
+        <button class="danger" type="button" onclick="removeProduct(${p.id})">Eliminar</button>
+      </div>
+
+      <div class="field-grid">
+        <div class="field">
+          <label>Nombre del producto</label>
+          <input id="edit-name-${p.id}" value="${escapeHtml(p.name)}"
+            oninput="setValue(${p.id},'name',this.value)"
+            placeholder="Ej. Auriculares inalámbricos">
+        </div>
+
+        <div class="field">
+          <label>Precio</label>
+          <input value="${escapeHtml(p.price)}"
+            oninput="setValue(${p.id},'price',this.value)"
+            placeholder="Ej. 49,99 €">
+        </div>
+
+        <div class="field">
+          <label>Enlace del producto</label>
+          <input type="url" value="${escapeHtml(p.link)}"
+            oninput="setValue(${p.id},'link',this.value)"
+            placeholder="https://...">
+        </div>
+
+        <div class="field">
+          <label>Subir foto desde el dispositivo</label>
+          <input type="file" accept="image/*"
+            onchange="loadImage(${p.id},this.files[0])">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Pegar foto desde el portapapeles</label>
+        <div class="photo-paste" tabindex="0" role="button"
+          aria-label="Zona para pegar la imagen del producto ${i+1}"
+          onpaste="pasteImage(event,${p.id})"
+          onclick="this.focus()">
+          <strong>Haz clic aquí y pulsa Ctrl + V</strong>
+          <span>${p.image
+            ? '✓ Foto añadida. Puedes pegar otra para sustituirla.'
+            : 'Copia una imagen y pégala aquí'}</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Nota (opcional)</label>
+        <input value="${escapeHtml(p.note)}"
+          oninput="setValue(${p.id},'note',this.value)"
+          placeholder="Color, talla, modelo…">
+      </div>
+    </div>
+  `).join('');
+}
+
+function loadImage(id, file) {
+  if (!file) return;
+
+  if (!file.type || !file.type.startsWith('image/')) {
+    alert('Selecciona un archivo de imagen.');
+    return;
+  }
+
+  const reader = new FileReader();
+
+  reader.onload = e => {
+    const p = products.find(x => x.id === id);
+
+    if (p) {
+      p.image = e.target.result;
+      renderEditors();
+      renderProducts();
+    }
+  };
+
+  reader.readAsDataURL(file);
+}
+
+function pasteImage(event, id) {
+  const items = event.clipboardData && event.clipboardData.items;
+  if (!items) return;
+
+  for (const item of items) {
+    if (item.type && item.type.startsWith('image/')) {
+      event.preventDefault();
+      const file = item.getAsFile();
+      if (file) loadImage(id, file);
+      return;
+    }
+  }
+
+  alert('El portapapeles no contiene una imagen. Copia una imagen y vuelve a pulsar Ctrl + V.');
+}
+
+function renderProducts() {
+  const root = document.getElementById('products');
+
+  if (!products.length) {
+    root.innerHTML = '<p style="text-align:center;color:#7a837d;font-style:italic">Todavía no has añadido ningún regalo.</p>';
+    return;
+  }
+
+  root.innerHTML = products.map(p => {
+    const image = p.image
+      ? `<img src="${p.image}" alt="${escapeHtml(p.name || 'Foto del producto')}">`
+      : '<div class="placeholder">✧<br>Foto del regalo</div>';
+
+    const link = p.link.trim()
+      ? `<a href="${escapeHtml(p.link)}" target="_blank" rel="noopener">Ver producto ↗</a>`
+      : '<span style="font:13px Arial,sans-serif;color:#9b9b8f">Enlace no añadido</span>';
+
+    return `
+      <article class="product">
+        <div class="photo-wrap">${image}</div>
+        <div>
+          <h3>${escapeHtml(p.name || 'Nombre del producto')}</h3>
+          <p class="price">${escapeHtml(p.price || 'Precio por añadir')}</p>
+          ${link}
+          ${p.note ? `<div class="product-note">${escapeHtml(p.note)}</div>` : ''}
+        </div>
+      </article>
+    `;
+  }).join('');
+}
+
+addProduct();
+</script>
+</body>
+</html>
+
